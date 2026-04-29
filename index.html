@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bear Lock Mystery</title>
+    <style>
+        :root {
+            --pink: #ff91a4;
+            --dark-pink: #ff758c;
+            --bear-brown: #d9a066; 
+            --bear-light: #edc9af;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: #000;
+            color: white;
+            font-family: 'Segoe UI', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Feather Effect --- */
+        .feather {
+            position: fixed;
+            top: -50px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 20px;
+            user-select: none;
+            pointer-events: none;
+            z-index: 9999;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(0) rotate(0deg) translateX(0); opacity: 0; }
+            10% { opacity: 0.8; }
+            90% { opacity: 0.8; }
+            100% { transform: translateY(110vh) rotate(360deg) translateX(50px); opacity: 0; }
+        }
+
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.8s ease;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .scene::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: -1;
+        }
+
+        #scene-lock { background-image: url('pngtree-big-tree-love-couple-grass-valentine-pink-background-image_539160.jpg'); }
+        #scene-envelope { background-image: url('pngtree-big-tree-love-couple-grass-valentine-pink-background-image_539160.jpg'); }
+        #scene-gallery { background-image: url('pngtree-big-tree-love-couple-grass-valentine-pink-background-image_539160.jpg'); overflow-y: auto; }
+
+        .hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        /* --- Bear Lock --- */
+        .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 5px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); text-align: center; }
+        .heart { color: var(--pink); margin: 0 10px; }
+        .sub-text { opacity: 0.9; margin-bottom: 20px; font-weight: 500; }
+
+        .bear-container {
+            position: relative;
+            width: 350px; height: 350px;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .bear-body {
+            width: 300px; height: 260px;
+            background: var(--bear-brown);
+            border-radius: 50% 50% 45% 45%;
+            position: relative;
+            box-shadow: inset -10px -10px 40px rgba(0,0,0,0.2), 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .ear { width: 90px; height: 90px; background: var(--bear-brown); border-radius: 50%; position: absolute; top: 10px; }
+        .ear.l { left: 30px; } .ear.r { right: 30px; }
+
+        .belly-display {
+            width: 260px; height: 130px;
+            background: #e6b382;
+            border-radius: 30px;
+            position: absolute; top: 55%; left: 50%;
+            transform: translate(-50%, -40%);
+            display: flex; justify-content: center; align-items: center; gap: 5px;
+        }
+
+        .dial { display: flex; flex-direction: column; align-items: center; }
+        .dial span {
+            background: #fff; color: #333; width: 35px; height: 50px;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; font-weight: bold; border-radius: 8px;
+        }
+        .dial button { background: none; border: none; cursor: pointer; font-size: 18px; color: #444; }
+
+        #enter-btn {
+            background: var(--dark-pink); color: white; border: none;
+            padding: 15px 60px; border-radius: 30px; font-weight: bold; cursor: pointer; margin-top: 20px;
+        }
+
+        /* --- Envelope --- */
+        .envelope-wrapper { position: relative; width: 320px; height: 220px; display: flex; justify-content: center; align-items: center; }
+        .envelope { width: 100%; height: 100%; background: #cd9d6d; position: absolute; z-index: 2; cursor: pointer; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        .flap { width: 100%; height: 100%; background: #b6895b; clip-path: polygon(0 0, 100% 0, 50% 50%, 0 0); position: absolute; top: 0; z-index: 3; transition: transform 0.4s; transform-origin: top; }
+        .letter { width: 280px; height: 350px; background: #fff; color: #333; padding: 30px; position: absolute; z-index: 1; transition: all 0.8s; opacity: 0; transform: translateY(20px) scale(0.8); }
+        .letter-open .envelope { opacity: 0; pointer-events: none; }
+        .letter-open .letter { opacity: 1; transform: translateY(0) scale(1); width: 90vw; max-width: 450px; height: 70vh; z-index: 10; overflow-y: auto; }
+
+        /* --- Gallery --- */
+        .grid { display: grid; grid-template-columns: repeat(2, 160px); gap: 15px; margin-top: 10px; }
+        .img-slot { width: 160px; height: 160px; background: #222; border: 4px solid white; background-size: cover; background-position: center; }
+        .img-slot:nth-child(1) { background-image: url('2b7ad798-d606-4cf5-872f-16626eed2678.jpg'); }
+        .img-slot:nth-child(2) { background-image: url('2cbfa678-5f20-4619-8b72-5fe3df55e7d0.jpg'); }
+        .img-slot:nth-child(3) { background-image: url('b5f044bf-e31f-4472-b6b7-c7178e43d9c4.jpg'); }
+        .img-slot:nth-child(4) { background-image: url('cec88530-6edd-46ff-a0a8-92450da9d0aa.jpg'); }
+
+        /* --- Flower Pop Up --- */
+        .flower-footer { margin-top: 30px; text-align: center; padding-bottom: 40px; cursor: pointer; }
+        .flower-icon { font-size: 50px; display: block; transition: transform 0.3s; }
+        .flower-icon:hover { transform: scale(1.2); }
+
+        .pop-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 10000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            opacity: 0; visibility: hidden; transition: 0.5s;
+        }
+        .pop-overlay.active { opacity: 1; visibility: visible; }
+        .big-flower { font-size: 150px; animation: bloom 1s ease-out; }
+        @keyframes bloom { from { transform: scale(0); rotate: -45deg; } to { transform: scale(1); rotate: 0; } }
+        
+        .pop-text { color: var(--pink); font-size: 24px; margin-top: 20px; font-weight: bold; text-align: center; padding: 0 20px; }
+        .close-pop { margin-top: 30px; color: white; background: none; border: 1px solid white; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+
+        /* --- Utility Buttons --- */
+        .btn-container { display: flex; gap: 10px; margin-top: 20px; }
+        .gallery-btn, .exit-btn { background: var(--dark-pink); color: white; border: none; padding: 10px 30px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        .exit-btn { background: #555; }
+        .top-exit { position: absolute; top: 20px; right: 20px; background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 5px 15px; border-radius: 15px; cursor: pointer; z-index: 100; }
+    </style>
+</head>
+<body>
+
+    <div id="scene-lock" class="scene">
+        <div class="header"><h1><span class="heart">❤</span>For Your Eyes Only<span class="heart">❤</span></h1></div>
+        <p class="sub-text">Enter our special date (6-digit pin).</p>
+        <div class="bear-container">
+            <div class="ear l"></div><div class="ear r"></div>
+            <div class="bear-body">
+                <div class="belly-display">
+                    <div class="dial"><button onclick="change(0, 1)">▲</button><span id="d0">0</span><button onclick="change(0, -1)">▼</button></div>
+                    <div class="dial"><button onclick="change(1, 1)">▲</button><span id="d1">0</span><button onclick="change(1, -1)">▼</button></div>
+                    <div class="dial"><button onclick="change(2, 1)">▲</button><span id="d2">0</span><button onclick="change(2, -1)">▼</button></div>
+                    <div class="dial"><button onclick="change(3, 1)">▲</button><span id="d3">0</span><button onclick="change(3, -1)">▼</button></div>
+                    <div class="dial"><button onclick="change(4, 1)">▲</button><span id="d4">0</span><button onclick="change(4, -1)">▼</button></div>
+                    <div class="dial"><button onclick="change(5, 1)">▲</button><span id="d5">0</span><button onclick="change(5, -1)">▼</button></div>
+                </div>
+            </div>
+        </div>
+        <button id="enter-btn" onclick="checkCode()">ENTER</button>
+    </div>
+
+    <div id="scene-envelope" class="scene hidden">
+        <div class="envelope-wrapper" id="env-wrapper">
+            <div class="envelope" onclick="openEnvelope()">
+                <div class="flap"></div>
+            </div>
+            <div class="letter">
+                <h2 style="margin-bottom:15px; color: var(--dark-pink);">My Dearest,</h2>
+                <p>Happy 27th months of growth and love with you my love. I'm soo very thankful and blessed to our Almighty God that He gave me the person that will cherish me and love me. I can't wait to the day that come that distance will no longer our problem because we will live in the same house. When that day come I will cherish every moment and capture every memories of us. Iloveeyouusoomuchh🥰❤</p>
+                <br>
+                <div class="btn-container">
+                    <button class="gallery-btn" onclick="goToGallery()">View Gallery ❤</button>
+                    <button class="exit-btn" onclick="exitToLock()">Go Back</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="scene-gallery" class="scene hidden">
+        <button class="top-exit" onclick="exitToLock()">Exit</button>
+        <h1 style="color: var(--pink); margin-top: 40px;">Our Memories</h1>
+        <div class="grid">
+            <div class="img-slot"></div><div class="img-slot"></div>
+            <div class="img-slot"></div><div class="img-slot"></div>
+        </div>
+        <div class="flower-footer" onclick="popFlower()">
+            <span class="flower-icon">🌸</span>
+            <p style="font-style: italic; color: var(--pink);">(Click the flower)</p>
+        </div>
+    </div>
+
+    <div id="flower-pop" class="pop-overlay">
+        <span class="big-flower">🌸</span>
+        <p class="pop-text">You are my forever bloom! <br> I love you more than words can say. ❤</p>
+        <button class="close-pop" onclick="closePop()">Close</button>
+    </div>
+
+    <script>
+        const password = [0, 1, 2, 9, 2, 4];
+        let current = [0, 0, 0, 0, 0, 0];
+
+        function createFeather() {
+            const feather = document.createElement('div');
+            feather.classList.add('feather');
+            feather.innerHTML = '🪶';
+            feather.style.left = Math.random() * 100 + 'vw';
+            feather.style.animationDuration = Math.random() * 3 + 4 + 's';
+            document.body.appendChild(feather);
+            setTimeout(() => feather.remove(), 7000);
+        }
+        setInterval(createFeather, 400);
+
+        function change(idx, dir) {
+            current[idx] = (current[idx] + dir + 10) % 10;
+            document.getElementById(`d${idx}`).innerText = current[idx];
+        }
+
+        function checkCode() {
+            if (JSON.stringify(current) === JSON.stringify(password)) {
+                document.getElementById('scene-lock').classList.add('hidden');
+                document.getElementById('scene-envelope').classList.remove('hidden');
+            } else {
+                alert("Wrong PIN! Think of our special date.");
+            }
+        }
+
+        function openEnvelope() { 
+            document.getElementById('env-wrapper').classList.add('letter-open'); 
+        }
+
+        function goToGallery() {
+            document.getElementById('scene-envelope').classList.add('hidden');
+            document.getElementById('scene-gallery').classList.remove('hidden');
+        }
+
+        // Exit/Reset Function
+        function exitToLock() {
+            // Hide everything
+            document.getElementById('scene-envelope').classList.add('hidden');
+            document.getElementById('scene-gallery').classList.add('hidden');
+            
+            // Reset the letter state
+            document.getElementById('env-wrapper').classList.remove('letter-open');
+            
+            // Show the lock screen
+            document.getElementById('scene-lock').classList.remove('hidden');
+            
+            // Reset PIN dials
+            current = [0, 0, 0, 0, 0, 0];
+            for(let i=0; i<6; i++) {
+                document.getElementById(`d${i}`).innerText = 0;
+            }
+        }
+
+        function popFlower() { document.getElementById('flower-pop').classList.add('active'); }
+        function closePop() { document.getElementById('flower-pop').classList.remove('active'); }
+    </script>
+</body>
+</html>
